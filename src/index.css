@@ -1,0 +1,251 @@
+/* Reset & Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Font properties */
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-scale: 1;
+  --base-font-size: calc(16px * var(--font-scale));
+
+  /* Colors (Obsidian/Slate theme) */
+  --bg-primary: #09090b;       /* Zinc 950 */
+  --bg-secondary: #121214;     /* Zinc 900 custom */
+  --bg-surface: #18181b;       /* Zinc 900 */
+  --bg-surface-elevated: #27272a; /* Zinc 800 */
+  --border-color: #3f3f46;      /* Zinc 700 */
+  --border-focus: #6366f1;      /* Indigo 500 */
+  
+  --text-primary: #f4f4f5;     /* Zinc 100 */
+  --text-secondary: #a1a1aa;   /* Zinc 400 */
+  --text-muted: #71717a;       /* Zinc 500 */
+
+  /* Accents */
+  --accent-primary: #6366f1;   /* Indigo 500 */
+  --accent-primary-hover: #4f46e5; /* Indigo 600 */
+  --accent-primary-light: #818cf8; /* Indigo 400 */
+  
+  --success: #10b981;          /* Emerald 500 */
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning: #f59e0b;          /* Amber 500 */
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --error: #ef4444;            /* Red 500 */
+  --error-bg: rgba(239, 68, 68, 0.1);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-round: 9999px;
+  
+  /* Focus indicator */
+  --focus-outline-color: #818cf8;
+}
+
+/* High Contrast Mode Overrides (RGAA / WCAG AAA compliance option) */
+.theme-high-contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0c;
+  --bg-surface: #121212;
+  --bg-surface-elevated: #1e1e1e;
+  --border-color: #ffffff;
+  --border-focus: #ffff00; /* High contrast yellow */
+  
+  --text-primary: #ffffff;
+  --text-secondary: #e4e4e7;
+  --text-muted: #a1a1aa;
+  
+  --accent-primary: #ffff00;
+  --accent-primary-hover: #dada00;
+  --accent-primary-light: #ffff80;
+  
+  --success: #00ff66;
+  --success-bg: rgba(0, 255, 102, 0.15);
+  --warning: #ffcc00;
+  --warning-bg: rgba(255, 204, 0, 0.15);
+  --error: #ff3333;
+  --error-bg: rgba(255, 51, 51, 0.15);
+  
+  --focus-outline-color: #ffff00;
+}
+
+/* Base resets & typography */
+html {
+  font-size: var(--base-font-size);
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Skip Link (Lien d'évitement) - RGAA Requirement */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 20px;
+  background-color: var(--accent-primary);
+  color: #000000;
+  padding: 10px 20px;
+  font-weight: 700;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  z-index: 9999;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* Focus Outline Style - RGAA Requirement */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus-outline-color) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.4);
+}
+
+.theme-high-contrast button:focus-visible,
+.theme-high-contrast input:focus-visible,
+.theme-high-contrast textarea:focus-visible,
+.theme-high-contrast a:focus-visible,
+.theme-high-contrast [tabindex]:focus-visible {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 6px #000000;
+}
+
+/* Screen Reader Only class - RGAA Requirement */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Form Styles */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  min-height: 48px; /* Mobile Friendly Tap Target */
+  color: var(--text-primary);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Layout Utilities */
+.app-container {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Animations */
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes pulse-active {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+/* Respect user's system settings for animations (RGAA) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.no-animations * {
+  animation: none !important;
+  transition: none !important;
+}
