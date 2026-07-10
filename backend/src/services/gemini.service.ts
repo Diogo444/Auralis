@@ -1,4 +1,4 @@
-import { appendFile } from "node:fs/promises";
+import { appendFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI, Type } from "@google/genai";
@@ -7,7 +7,7 @@ import { AnalysisResultSchema } from "../schemas/analysis.schema.js";
 import type { AnalysisResult, AnalyzeFrameInput } from "../types/analysis.js";
 
 const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../");
-const geminiLogPath = resolve(backendRoot, "log.txt");
+const geminiLogPath = env.geminiLogPath ?? resolve(backendRoot, "log.txt");
 
 const ai = new GoogleGenAI({
   apiKey: env.geminiApiKey,
@@ -55,6 +55,7 @@ async function appendGeminiLog(label: string, payload: unknown) {
   ].join("\n");
 
   try {
+    await mkdir(dirname(geminiLogPath), { recursive: true });
     await appendFile(geminiLogPath, `${entry}\n`, "utf8");
   } catch (error) {
     console.error("[Auralis][Gemini log file error]", error);

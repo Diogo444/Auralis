@@ -9,6 +9,7 @@ const EnvSchema = z.object({
   ANALYSIS_QUEUE_LIMIT: z.coerce.number().int().positive().default(10),
   ANALYSIS_MAX_IMAGE_BYTES: z.coerce.number().int().positive().default(1_000_000),
   ANALYSIS_MAX_MISSION_CHARS: z.coerce.number().int().positive().default(500),
+  GEMINI_LOG_PATH: z.string().optional(),
 });
 
 const parsed = EnvSchema.parse(process.env);
@@ -22,4 +23,5 @@ export const env = {
   analysisQueueLimit: parsed.ANALYSIS_QUEUE_LIMIT,
   maxImageBytes: parsed.ANALYSIS_MAX_IMAGE_BYTES,
   maxMissionChars: parsed.ANALYSIS_MAX_MISSION_CHARS,
+  geminiLogPath: parsed.GEMINI_LOG_PATH,
 };

@@ -1,0 +1,32 @@
+services:
+  auralis-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: auralis-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      GEMINI_LOG_PATH: /app/logs/log.txt
+    volumes:
+      - ./backend/logs:/app/logs
+    networks:
+      - caddy_net
+
+  auralis-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auralis-frontend
+    restart: unless-stopped
+    depends_on:
+      - auralis-backend
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true

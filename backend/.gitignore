@@ -3,3 +3,4 @@ dist/
 .env
 request.http
 log.txt
+logs/
