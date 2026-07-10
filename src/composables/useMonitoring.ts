@@ -17,10 +17,11 @@ type UseMonitoringOptions = {
   onError: () => void;
 };
 
-const MINIMUM_INTERVAL_MS = 2_000;
-const MINIMUM_DELAY_MS = 300;
-const FORCE_ANALYSIS_AFTER_MS = 8_000;
-const CHANGE_THRESHOLD = 0.025;
+// Keep one active request: these values tune responsiveness without flooding Gemini.
+const MINIMUM_INTERVAL_MS = 1_200;
+const MINIMUM_DELAY_MS = 150;
+const FORCE_ANALYSIS_AFTER_MS = 4_000;
+const CHANGE_THRESHOLD = 0.018;
 
 export function useMonitoring({
   videoRef,
@@ -84,7 +85,8 @@ export function useMonitoring({
     try {
       const difference = shouldAnalyzeFrame();
       const mustForce =
-        !lastAnalysisAt || performance.now() - lastAnalysisAt >= FORCE_ANALYSIS_AFTER_MS;
+        !lastAnalysisAt ||
+        performance.now() - lastAnalysisAt >= FORCE_ANALYSIS_AFTER_MS;
       const shouldAnalyze =
         difference === null || difference >= CHANGE_THRESHOLD || mustForce;
 
@@ -111,7 +113,10 @@ export function useMonitoring({
       }
 
       const duration = performance.now() - startedAt;
-      const nextDelay = Math.max(MINIMUM_DELAY_MS, MINIMUM_INTERVAL_MS - duration);
+      const nextDelay = Math.max(
+        MINIMUM_DELAY_MS,
+        MINIMUM_INTERVAL_MS - duration,
+      );
       timerId = window.setTimeout(runMonitoringCycle, nextDelay);
     }
   }
