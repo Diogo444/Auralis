@@ -36,7 +36,12 @@ Analyse l'image actuelle et réponds uniquement avec le JSON demandé.
 Règles :
 - matched vaut true uniquement si la mission est clairement validée.
 - confidence est entre 0 et 1.
-- message doit être court, oral et naturel.
+- message et reason doivent toujours être en français.
+- message doit être court, oral et naturel, car il peut être vocalisé.
+- Si matched vaut true, message doit annoncer clairement ce qui est vu et où, si utile.
+- Si matched vaut false, message doit rester sobre, par exemple "Recherche en cours." ou "Je ne l'identifie pas encore clairement.".
+- Pour une mission de type "dis-moi quand tu vois X", matched vaut true dès que X est visible de façon exploitable, même si l'image n'est pas parfaite.
+- Si l'image est floue mais que la cible reste identifiable, matched doit rester true avec une confidence plus basse.
 - Ne donne pas d'ordre dangereux.
 - Si tu n'es pas sûr, matched doit être false.
   `;
