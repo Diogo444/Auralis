@@ -41,6 +41,7 @@ export async function analyzeFrameWithGemini({
   imageBuffer,
   mimeType,
 }: AnalyzeFrameInput): Promise<AnalysisResult> {
+  const startedAt = performance.now();
   const timeoutController = new AbortController();
   const timeoutId = setTimeout(
     () => timeoutController.abort(),
@@ -71,8 +72,41 @@ export async function analyzeFrameWithGemini({
     });
 
     const text = response.text ?? "";
-    const json = JSON.parse(text);
-    return AnalysisResultSchema.parse(json);
+    const durationMs = Math.round(performance.now() - startedAt);
+
+    console.log(
+      "[Auralis][Gemini raw]",
+      JSON.stringify(
+        {
+          model: env.geminiModel,
+          durationMs,
+          mission,
+          mimeType,
+          imageBytes: imageBuffer.byteLength,
+          response: text,
+        },
+        null,
+        2,
+      ),
+    );
+
+    let json: unknown;
+
+    try {
+      json = JSON.parse(text);
+    } catch (error) {
+      console.error("[Auralis][Gemini invalid json]", text);
+      throw error;
+    }
+
+    const parsed = AnalysisResultSchema.parse(json);
+
+    console.log(
+      "[Auralis][Gemini parsed]",
+      JSON.stringify(parsed, null, 2),
+    );
+
+    return parsed;
   } finally {
     clearTimeout(timeoutId);
   }
