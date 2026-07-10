@@ -1,7 +1,13 @@
+import { appendFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { GoogleGenAI, Type } from "@google/genai";
 import { env } from "../config/env.js";
 import { AnalysisResultSchema } from "../schemas/analysis.schema.js";
 import type { AnalysisResult, AnalyzeFrameInput } from "../types/analysis.js";
+
+const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../");
+const geminiLogPath = resolve(backendRoot, "log.txt");
 
 const ai = new GoogleGenAI({
   apiKey: env.geminiApiKey,
@@ -33,7 +39,21 @@ Règles :
 - message doit être court, oral et naturel.
 - Ne donne pas d'ordre dangereux.
 - Si tu n'es pas sûr, matched doit être false.
-`;
+  `;
+}
+
+async function appendGeminiLog(label: string, payload: unknown) {
+  const entry = [
+    "",
+    `--- ${new Date().toISOString()} ${label} ---`,
+    JSON.stringify(payload, null, 2),
+  ].join("\n");
+
+  try {
+    await appendFile(geminiLogPath, `${entry}\n`, "utf8");
+  } catch (error) {
+    console.error("[Auralis][Gemini log file error]", error);
+  }
 }
 
 export async function analyzeFrameWithGemini({
@@ -73,22 +93,20 @@ export async function analyzeFrameWithGemini({
 
     const text = response.text ?? "";
     const durationMs = Math.round(performance.now() - startedAt);
+    const rawLog = {
+      model: env.geminiModel,
+      durationMs,
+      mission,
+      mimeType,
+      imageBytes: imageBuffer.byteLength,
+      response: text,
+    };
 
     console.log(
       "[Auralis][Gemini raw]",
-      JSON.stringify(
-        {
-          model: env.geminiModel,
-          durationMs,
-          mission,
-          mimeType,
-          imageBytes: imageBuffer.byteLength,
-          response: text,
-        },
-        null,
-        2,
-      ),
+      JSON.stringify(rawLog, null, 2),
     );
+    await appendGeminiLog("[Auralis][Gemini raw]", rawLog);
 
     let json: unknown;
 
@@ -96,6 +114,10 @@ export async function analyzeFrameWithGemini({
       json = JSON.parse(text);
     } catch (error) {
       console.error("[Auralis][Gemini invalid json]", text);
+      await appendGeminiLog("[Auralis][Gemini invalid json]", {
+        ...rawLog,
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
 
@@ -105,6 +127,7 @@ export async function analyzeFrameWithGemini({
       "[Auralis][Gemini parsed]",
       JSON.stringify(parsed, null, 2),
     );
+    await appendGeminiLog("[Auralis][Gemini parsed]", parsed);
 
     return parsed;
   } finally {
