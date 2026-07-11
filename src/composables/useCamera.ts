@@ -5,6 +5,8 @@ type UseCameraOptions = {
   announce: (message: string) => void;
 };
 
+const VIDEO_READY_TIMEOUT_MS = 5_000;
+
 export function useCamera({ videoRef, announce }: UseCameraOptions) {
   const cameraStream = ref<MediaStream | null>(null);
   const diagnosticLogs = ref<string[]>([]);
@@ -46,6 +48,50 @@ export function useCamera({ videoRef, announce }: UseCameraOptions) {
     }
   }
 
+  function waitForVideoReady(video: HTMLVideoElement): Promise<void> {
+    if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      let timeoutId: number | null = null;
+
+      const cleanup = () => {
+        video.removeEventListener("loadedmetadata", onReady);
+        video.removeEventListener("canplay", onReady);
+        video.removeEventListener("playing", onReady);
+
+        if (timeoutId !== null) {
+          window.clearTimeout(timeoutId);
+        }
+      };
+
+      const onReady = () => {
+        if (!video.videoWidth || !video.videoHeight || video.readyState < 2) {
+          return;
+        }
+
+        cleanup();
+        resolve();
+      };
+
+      timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("La camera ne fournit pas encore d'image."));
+      }, VIDEO_READY_TIMEOUT_MS);
+
+      video.addEventListener("loadedmetadata", onReady);
+      video.addEventListener("canplay", onReady);
+      video.addEventListener("playing", onReady);
+
+      void video.play().then(onReady).catch(() => {
+        // Some browsers reject play() briefly while the stream is attaching.
+        // The media events above still resolve once frames are available.
+      });
+      onReady();
+    });
+  }
+
   async function startCamera() {
     logDiagnostic("Tentative d'activation de la camera...");
     logDiagnostic(`window.isSecureContext = ${window.isSecureContext}`);
@@ -71,6 +117,7 @@ export function useCamera({ videoRef, announce }: UseCameraOptions) {
       cameraStream.value = stream;
       if (videoRef.value) {
         videoRef.value.srcObject = stream;
+        await waitForVideoReady(videoRef.value);
       }
 
       announce("Camera demarree avec succes.");

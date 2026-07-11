@@ -1,5 +1,6 @@
 const ANALYSIS_FRAME_WIDTH = 512;
 const CHANGE_SAMPLE_SIZE = 32;
+const FRAME_READY_TIMEOUT_MS = 3_000;
 
 export type CapturedFrame = {
   image: Blob;
@@ -32,6 +33,8 @@ export async function captureFrameAsBlob(
   video: HTMLVideoElement,
   canvas: HTMLCanvasElement,
 ): Promise<CapturedFrame> {
+  await waitForFrame(video);
+
   if (!video.videoWidth || !video.videoHeight) {
     throw new Error("La camera n'est pas prete.");
   }
@@ -60,6 +63,43 @@ export async function captureFrameAsBlob(
     encodingMs,
     imageBytes: image.size,
   };
+}
+
+function waitForFrame(video: HTMLVideoElement): Promise<void> {
+  if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    let timeoutId: number | null = null;
+
+    const cleanup = () => {
+      video.removeEventListener("loadedmetadata", onReady);
+      video.removeEventListener("loadeddata", onReady);
+      video.removeEventListener("canplay", onReady);
+
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+
+    const onReady = () => {
+      if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) {
+        cleanup();
+        resolve();
+      }
+    };
+
+    timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("La camera n'est pas prete."));
+    }, FRAME_READY_TIMEOUT_MS);
+
+    video.addEventListener("loadedmetadata", onReady);
+    video.addEventListener("loadeddata", onReady);
+    video.addEventListener("canplay", onReady);
+    onReady();
+  });
 }
 
 export function captureFrameSample(
